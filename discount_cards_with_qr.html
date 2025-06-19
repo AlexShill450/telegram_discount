@@ -386,7 +386,7 @@
 
     <!-- Подключение библиотеки для генерации QR-кодов -->
     <script>
-        // Fallback функция для создания "псевдо QR-код"
+        // Fallback функция для создания "псевдо QR-кода"
         window.QRious = window.QRious || null;
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" onerror="console.log('QRious не загружена, используем fallback')"></script>
@@ -394,7 +394,7 @@
     <script>
         let cards = [];
 
-        // Инициализация карты
+        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             loadCards();
             updateDisplay();
