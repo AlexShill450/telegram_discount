@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дисконтные карты</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 16px;
+        }
+
+        .add-card-form {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .cards-grid {
+            display: grid;
+            gap: 20px;
+            animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .card-category {
+            font-size: 12px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            color: #667eea;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-delete {
+            padding: 8px 12px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            background: #ff3742;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.8);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 300px;
+            width: 90%;
+            text-align: center;
+            animation: scaleIn 0.3s ease-out;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: #f0f0f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .add-card-form {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💳 Мои карты</h1>
+            <p>Храните все дисконтные карты в одном месте</p>
+        </div>
+
+        <div class="add-card-form">
+            <h3 style="margin-bottom: 20px; color: #333;">Добавить новую карту</h3>
+            <form id="cardForm">
+                <div class="form-group">
+                    <label for="storeName">Название магазина</label>
+                    <input type="text" id="storeName" required placeholder="Например: Пятёрочка">
+                </div>
+                <div class="form-group">
+                    <label for="cardNumber">Номер карты</label>
+                    <input type="text" id="cardNumber" required placeholder="1234 5678 9012 3456">
+                </div>
+                <div class="form-group">
+                    <label for="category">Категория</label>
+                    <select id="category" required>
+                        <option value="">Выберите категорию</option>
+                        <option value="продукты">Продукты</option>
+                        <option value="одежда">Одежда</option>
+                        <option value="аптека">Аптека</option>
+                        <option value="топливо">АЗС</option>
+                        <option value="электроника">Электроника</option>
+                        <option value="красота">Красота</option>
+                        <option value="спорт">Спорт</option>
+                        <option value="другое">Другое</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Добавить карту</button>
+            </form>
+        </div>
+
+        <div class="cards-grid" id="cardsGrid">
+            <!-- Карты будут добавлены здесь -->
+        </div>
+
+        <div class="empty-state" id="emptyState">
+            <h3>📱 Пока нет карт</h3>
+            <p>Добавьте свою первую дисконтную карту, чтобы больше не носить с собой толстый кошелек!</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно для отображения карты -->
+    <div class="modal" id="cardModal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <div class="qr-code" id="qrCode">QR-код карты</div>
+            <div id="modalCardNumber" style="margin: 15px 0; font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold;"></div>
+            <button class="btn-primary" onclick="closeModal()">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+        let cards = [];
+
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            
+            // Применяем тему Telegram
+            if (tg.themeParams?.bg_color) {
+                document.body.style.background = tg.themeParams.bg_color;
+            }
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCards();
+            updateDisplay();
+        });
+
+        // Обработка формы добавления карты
+        document.getElementById('cardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const storeName = document.getElementById('storeName').value.trim();
+            const cardNumber = document.getElementById('cardNumber').value.trim();
+            const category = document.getElementById('category').value;
+            
+            if (!storeName || !cardNumber || !category) {
+                showNotification('Пожалуйста, заполните все поля');
+                return;
+            }
+            
+            const newCard = {
+                id: Date.now(),
+                storeName: storeName,
+                cardNumber: cardNumber,
+                category: category,
+                createdAt: new Date().toLocaleDateString('ru-RU')
+            };
+            
+            cards.push(newCard);
+            saveCards();
+            updateDisplay();
+            
+            // Очистка формы
+            this.reset();
+            
+            showNotification('Карта успешно добавлена!');
+        });
+
+        // Сохранение карт
+        function saveCards() {
+            const cardsData = JSON.stringify(cards);
+            
+            if (window.Telegram?.WebApp?.CloudStorage) {
+                Telegram.WebApp.CloudStorage.setItem('discountCards', cardsData, function(error) {
+                    if (error) {
+                        console.error('Ошибка сохранения в CloudStorage:', error);
+                        // Fallback на localStorage
+                        try {
+                            localStorage.setItem('discountCards', cardsData);
+                        } catch (e) {
+                            console.error('Ошибка сохранения в localStorage:', e);
+                        }
+                    }
+                });
+            } else {
+                // Fallback для тестирования или при отсутствии Telegram
+                try {
+                    localStorage.setItem('discountCards', cardsData);
+                } catch (e) {
+                    console.error('Ошибка сохранения:', e);
+                }
+            }
+        }
+
+        // Загрузка карт
+        function loadCards() {
+            if (window.Telegram?.WebApp?.CloudStorage) {
+                Telegram.WebApp.CloudStorage.getItem('discountCards', function(error, data) {
+                    if (!error && data) {
+                        try {
+                            cards = JSON.parse(data);
+                            updateDisplay();
+                        } catch (e) {
+                            console.error('Ошибка парсинга данных из CloudStorage:', e);
+                            loadFromLocalStorage();
+                        }
+                    } else {
+                        loadFromLocalStorage();
+                    }
+                });
+            } else {
+                loadFromLocalStorage();
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const savedCards = localStorage.getItem('discountCards');
+                if (savedCards) {
+                    cards = JSON.parse(savedCards);
+                    updateDisplay();
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки из localStorage:', e);
+                cards = [];
+            }
+        }
+
+        // Обновление отображения
+        function updateDisplay() {
+            const cardsGrid = document.getElementById('cardsGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (cards.length === 0) {
+                cardsGrid.style.display = 'none';
+                emptyState.style.display = 'block';
+            } else {
+                cardsGrid.style.display = 'grid';
+                emptyState.style.display = 'none';
+                renderCards();
+            }
+        }
+
+        // Отрисовка карт
+        function renderCards() {
+            const cardsGrid = document.getElementById('cardsGrid');
+            cardsGrid.innerHTML = '';
+            
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.setAttribute('data-card-id', card.id);
+                cardElement.innerHTML = `
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">${escapeHtml(card.storeName)}</div>
+                            <div class="card-category">${escapeHtml(card.category)}</div>
+                        </div>
+                    </div>
+                    <div class="card-number">${formatCardNumber(card.cardNumber)}</div>
+                    <div style="font-size: 12px; color: #999;">Добавлена: ${card.createdAt}</div>
+                    <div class="card-actions">
+                        <button class="btn-secondary" onclick="showCard(${card.id})">Показать</button>
+                        <button class="btn-secondary" onclick="copyCardNumber('${escapeHtml(card.cardNumber)}')">Копировать</button>
+                        <button class="btn-delete" onclick="deleteCard(${card.id})">Удалить</button>
+                    </div>
+                `;
+                cardsGrid.appendChild(cardElement);
+            });
+        }
+
+        // Экранирование HTML для безопасности
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Форматирование номера карты
+        function formatCardNumber(number) {
+            return number.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
+        }
+
+        // Показать карту в модальном окне
+        function showCard(cardId) {
+            const card = cards.find(c => c.id === cardId);
+            if (card) {
+                document.getElementById('modalTitle').textContent = card.storeName;
+                document.getElementById('modalCardNumber').textContent = formatCardNumber(card.cardNumber);
+                document.getElementById('cardModal').style.display = 'block';
+                
+                // Показать кнопку "Назад" в Telegram
+                if (window.Telegram?.WebApp?.BackButton) {
+                    Telegram.WebApp.BackButton.show();
+                }
+            }
+        }
+
+        // Закрыть модальное окно
+        function closeModal() {
+            document.getElementById('cardModal').style.display = 'none';
+            
+            // Скрыть кнопку "Назад" в Telegram
+            if (window.Telegram?.WebApp?.BackButton) {
+                Telegram.WebApp.BackButton.hide();
+            }
+        }
+
+        // Копировать номер карты
+        function copyCardNumber(cardNumber) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(cardNumber).then(() => {
+                    showNotification('Номер карты скопирован!');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(cardNumber);
+                });
+            } else {
+                fallbackCopyTextToClipboard(cardNumber);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showNotification('Номер карты скопирован!');
+            } catch (err) {
+                console.error('Ошибка копирования:', err);
+                showNotification('Не удалось скопировать номер карты');
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+        
+        // Показать уведомление
+        function showNotification(message) {
+            if (window.Telegram?.WebApp?.showAlert) {
+                Telegram.WebApp.showAlert(message);
+            } else {
+                alert(message);
+            }
+        }
+
+        // Удалить карту с подтверждением
+        function deleteCard(cardId) {
+            const confirmDelete = () => {
+                cards = cards.filter(c => c.id !== cardId);
+                saveCards();
+                updateDisplay();
+                showNotification('Карта удалена');
+            };
+
+            if (window.Telegram?.WebApp?.showConfirm) {
+                Telegram.WebApp.showConfirm('Вы уверены, что хотите удалить эту карту?', confirmDelete);
+            } else {
+                if (confirm('Вы уверены, что хотите удалить эту карту?')) {
+                    confirmDelete();
+                }
+            }
+        }
+
+        // Закрытие модального окна по клику вне его
+        document.getElementById('cardModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Обработка кнопки "Назад" в Telegram
+        if (window.Telegram?.WebApp?.BackButton) {
+            Telegram.WebApp.BackButton.onClick(function() {
+                if (document.getElementById('cardModal').style.display === 'block') {
+                    closeModal();
+                } else {
+                    Telegram.WebApp.close();
+                }
+            });
+        }
+
+        // Обработка ошибок
+        window.addEventListener('error', function(e) {
+            console.error('Глобальная ошибка:', e.error);
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Необработанное отклонение промиса:', e.reason);
+        });
+    </script>
+</body>
+</html>
