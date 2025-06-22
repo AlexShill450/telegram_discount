@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Дисконтные карты</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -254,7 +253,7 @@
             background: white;
             border-radius: 20px;
             padding: 30px;
-            max-width: 300px;
+            max-width: 350px;
             width: 90%;
             text-align: center;
             animation: scaleIn 0.3s ease-out;
@@ -264,13 +263,16 @@
             width: 200px;
             height: 200px;
             margin: 20px auto;
-            background: #f0f0f0;
+            background: white;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            color: #666;
+            border: 2px solid #f0f0f0;
+        }
+
+        .qr-code canvas {
+            border-radius: 8px;
         }
 
         @keyframes fadeIn {
@@ -376,27 +378,22 @@
     <div class="modal" id="cardModal">
         <div class="modal-content">
             <h3 id="modalTitle"></h3>
-            <div class="qr-code" id="qrCode">QR-код карты</div>
+            <div class="qr-code" id="qrCode"></div>
             <div id="modalCardNumber" style="margin: 15px 0; font-family: 'Courier New', monospace; font-size: 18px; font-weight: bold;"></div>
             <button class="btn-primary" onclick="closeModal()">Закрыть</button>
         </div>
     </div>
 
+    <!-- Подключение библиотеки для генерации QR-кодов -->
+    <script>
+        // Fallback функция для создания "псевдо QR-кода"
+        window.QRious = window.QRious || null;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" onerror="console.log('QRious не загружена, используем fallback')"></script>
+
     <script>
         let cards = [];
 
-        // Инициализация Telegram WebApp
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-            
-            // Применяем тему Telegram
-            if (tg.themeParams?.bg_color) {
-                document.body.style.background = tg.themeParams.bg_color;
-            }
-        }
-        
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             loadCards();
@@ -407,21 +404,16 @@
         document.getElementById('cardForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const storeName = document.getElementById('storeName').value.trim();
-            const cardNumber = document.getElementById('cardNumber').value.trim();
+            const storeName = document.getElementById('storeName').value;
+            const cardNumber = document.getElementById('cardNumber').value;
             const category = document.getElementById('category').value;
-            
-            if (!storeName || !cardNumber || !category) {
-                showNotification('Пожалуйста, заполните все поля');
-                return;
-            }
             
             const newCard = {
                 id: Date.now(),
                 storeName: storeName,
                 cardNumber: cardNumber,
                 category: category,
-                createdAt: new Date().toLocaleDateString('ru-RU')
+                createdAt: new Date().toLocaleDateString()
             };
             
             cards.push(newCard);
@@ -429,68 +421,29 @@
             updateDisplay();
             
             // Очистка формы
-            this.reset();
+            document.getElementById('cardForm').reset();
             
-            showNotification('Карта успешно добавлена!');
+            // Анимация добавления
+            setTimeout(() => {
+                const newCardElement = document.querySelector(`[data-card-id="${newCard.id}"]`);
+                if (newCardElement) {
+                    newCardElement.style.animation = 'fadeInUp 0.5s ease-out';
+                }
+            }, 100);
         });
 
         // Сохранение карт
         function saveCards() {
-            const cardsData = JSON.stringify(cards);
-            
-            if (window.Telegram?.WebApp?.CloudStorage) {
-                Telegram.WebApp.CloudStorage.setItem('discountCards', cardsData, function(error) {
-                    if (error) {
-                        console.error('Ошибка сохранения в CloudStorage:', error);
-                        // Fallback на localStorage
-                        try {
-                            localStorage.setItem('discountCards', cardsData);
-                        } catch (e) {
-                            console.error('Ошибка сохранения в localStorage:', e);
-                        }
-                    }
-                });
-            } else {
-                // Fallback для тестирования или при отсутствии Telegram
-                try {
-                    localStorage.setItem('discountCards', cardsData);
-                } catch (e) {
-                    console.error('Ошибка сохранения:', e);
-                }
-            }
+            // В реальном Telegram Mini App здесь будет Telegram.WebApp.CloudStorage
+            localStorage.setItem('discountCards', JSON.stringify(cards));
         }
 
         // Загрузка карт
         function loadCards() {
-            if (window.Telegram?.WebApp?.CloudStorage) {
-                Telegram.WebApp.CloudStorage.getItem('discountCards', function(error, data) {
-                    if (!error && data) {
-                        try {
-                            cards = JSON.parse(data);
-                            updateDisplay();
-                        } catch (e) {
-                            console.error('Ошибка парсинга данных из CloudStorage:', e);
-                            loadFromLocalStorage();
-                        }
-                    } else {
-                        loadFromLocalStorage();
-                    }
-                });
-            } else {
-                loadFromLocalStorage();
-            }
-        }
-
-        function loadFromLocalStorage() {
-            try {
-                const savedCards = localStorage.getItem('discountCards');
-                if (savedCards) {
-                    cards = JSON.parse(savedCards);
-                    updateDisplay();
-                }
-            } catch (e) {
-                console.error('Ошибка загрузки из localStorage:', e);
-                cards = [];
+            // В реальном Telegram Mini App здесь будет загрузка из Telegram.WebApp.CloudStorage
+            const savedCards = localStorage.getItem('discountCards');
+            if (savedCards) {
+                cards = JSON.parse(savedCards);
             }
         }
 
@@ -521,15 +474,15 @@
                 cardElement.innerHTML = `
                     <div class="card-header">
                         <div>
-                            <div class="card-title">${escapeHtml(card.storeName)}</div>
-                            <div class="card-category">${escapeHtml(card.category)}</div>
+                            <div class="card-title">${card.storeName}</div>
+                            <div class="card-category">${card.category}</div>
                         </div>
                     </div>
                     <div class="card-number">${formatCardNumber(card.cardNumber)}</div>
                     <div style="font-size: 12px; color: #999;">Добавлена: ${card.createdAt}</div>
                     <div class="card-actions">
                         <button class="btn-secondary" onclick="showCard(${card.id})">Показать</button>
-                        <button class="btn-secondary" onclick="copyCardNumber('${escapeHtml(card.cardNumber)}')">Копировать</button>
+                        <button class="btn-secondary" onclick="copyCardNumber('${card.cardNumber}')">Копировать</button>
                         <button class="btn-delete" onclick="deleteCard(${card.id})">Удалить</button>
                     </div>
                 `;
@@ -537,16 +490,85 @@
             });
         }
 
-        // Экранирование HTML для безопасности
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
         // Форматирование номера карты
         function formatCardNumber(number) {
             return number.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
+        }
+
+        // Генерация QR-кода
+        function generateQRCode(text, container) {
+            // Очистка контейнера
+            container.innerHTML = '';
+            
+            // Проверяем, доступна ли библиотека QRious
+            if (window.QRious) {
+                try {
+                    // Создание canvas элемента
+                    const canvas = document.createElement('canvas');
+                    
+                    // Генерация QR-кода с помощью QRious
+                    const qr = new QRious({
+                        element: canvas,
+                        value: text,
+                        size: 180,
+                        background: 'white',
+                        foreground: '#333333',
+                        level: 'M'
+                    });
+                    
+                    container.appendChild(canvas);
+                    return;
+                } catch (error) {
+                    console.error('Ошибка генерации QR-кода:', error);
+                }
+            }
+            
+            // Fallback - стилизованное отображение номера карты
+            container.innerHTML = `
+                <div style="
+                    width: 180px; 
+                    height: 180px; 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 12px;
+                    display: flex; 
+                    flex-direction: column; 
+                    align-items: center; 
+                    justify-content: center; 
+                    color: white;
+                    text-align: center;
+                    padding: 20px;
+                    box-sizing: border-box;
+                    position: relative;
+                    overflow: hidden;
+                ">
+                    <div style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"qr\" x=\"0\" y=\"0\" width=\"10\" height=\"10\" patternUnits=\"userSpaceOnUse\"><rect width=\"5\" height=\"5\" fill=\"%23ffffff\" opacity=\"0.1\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23qr)\"/></svg>');
+                        opacity: 0.3;
+                    "></div>
+                    <div style="position: relative; z-index: 1;">
+                        <div style="font-size: 32px; margin-bottom: 15px;">📱</div>
+                        <div style="font-size: 14px; margin-bottom: 10px; opacity: 0.9;">Карта лояльности</div>
+                        <div style="
+                            font-family: 'Courier New', monospace; 
+                            font-weight: bold; 
+                            font-size: 16px;
+                            word-break: break-all;
+                            line-height: 1.3;
+                            background: rgba(255,255,255,0.1);
+                            padding: 8px;
+                            border-radius: 6px;
+                            backdrop-filter: blur(5px);
+                        ">
+                            ${formatCardNumber(text)}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Показать карту в модальном окне
@@ -555,83 +577,34 @@
             if (card) {
                 document.getElementById('modalTitle').textContent = card.storeName;
                 document.getElementById('modalCardNumber').textContent = formatCardNumber(card.cardNumber);
-                document.getElementById('cardModal').style.display = 'block';
                 
-                // Показать кнопку "Назад" в Telegram
-                if (window.Telegram?.WebApp?.BackButton) {
-                    Telegram.WebApp.BackButton.show();
-                }
+                // Генерация QR-кода с номером карты
+                const qrContainer = document.getElementById('qrCode');
+                generateQRCode(card.cardNumber.replace(/\s/g, ''), qrContainer);
+                
+                document.getElementById('cardModal').style.display = 'block';
             }
         }
 
         // Закрыть модальное окно
         function closeModal() {
             document.getElementById('cardModal').style.display = 'none';
-            
-            // Скрыть кнопку "Назад" в Telegram
-            if (window.Telegram?.WebApp?.BackButton) {
-                Telegram.WebApp.BackButton.hide();
-            }
         }
 
         // Копировать номер карты
         function copyCardNumber(cardNumber) {
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(cardNumber).then(() => {
-                    showNotification('Номер карты скопирован!');
-                }).catch(() => {
-                    fallbackCopyTextToClipboard(cardNumber);
-                });
-            } else {
-                fallbackCopyTextToClipboard(cardNumber);
-            }
+            navigator.clipboard.writeText(cardNumber).then(() => {
+                // В реальном приложении можно показать уведомление
+                alert('Номер карты скопирован!');
+            });
         }
 
-        function fallbackCopyTextToClipboard(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                showNotification('Номер карты скопирован!');
-            } catch (err) {
-                console.error('Ошибка копирования:', err);
-                showNotification('Не удалось скопировать номер карты');
-            } finally {
-                document.body.removeChild(textArea);
-            }
-        }
-        
-        // Показать уведомление
-        function showNotification(message) {
-            if (window.Telegram?.WebApp?.showAlert) {
-                Telegram.WebApp.showAlert(message);
-            } else {
-                alert(message);
-            }
-        }
-
-        // Удалить карту с подтверждением
+        // Удалить карту
         function deleteCard(cardId) {
-            const confirmDelete = () => {
+            if (confirm('Вы уверены, что хотите удалить эту карту?')) {
                 cards = cards.filter(c => c.id !== cardId);
                 saveCards();
                 updateDisplay();
-                showNotification('Карта удалена');
-            };
-
-            if (window.Telegram?.WebApp?.showConfirm) {
-                Telegram.WebApp.showConfirm('Вы уверены, что хотите удалить эту карту?', confirmDelete);
-            } else {
-                if (confirm('Вы уверены, что хотите удалить эту карту?')) {
-                    confirmDelete();
-                }
             }
         }
 
@@ -640,26 +613,6 @@
             if (e.target === this) {
                 closeModal();
             }
-        });
-        
-        // Обработка кнопки "Назад" в Telegram
-        if (window.Telegram?.WebApp?.BackButton) {
-            Telegram.WebApp.BackButton.onClick(function() {
-                if (document.getElementById('cardModal').style.display === 'block') {
-                    closeModal();
-                } else {
-                    Telegram.WebApp.close();
-                }
-            });
-        }
-
-        // Обработка ошибок
-        window.addEventListener('error', function(e) {
-            console.error('Глобальная ошибка:', e.error);
-        });
-
-        window.addEventListener('unhandledrejection', function(e) {
-            console.error('Необработанное отклонение промиса:', e.reason);
         });
     </script>
 </body>
