@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -327,6 +327,7 @@
             }
         }
     </style>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -342,10 +343,14 @@
                     <label for="storeName">Название магазина</label>
                     <input type="text" id="storeName" required placeholder="Например: Пятёрочка">
                 </div>
-                <div class="form-group">
-                    <label for="cardNumber">Номер карты</label>
-                    <input type="text" id="cardNumber" required placeholder="1234 5678 9012 3456">
-                </div>
+                
+<div class="form-group">
+    <label for="cardNumber">Номер карты</label>
+    <input type="text" id="cardNumber" required placeholder="1234 5678 9012 3456">
+    <button type="button" onclick="startBarcodeScanner()" class="btn-secondary" style="margin-top: 10px;">📷 Сканировать штрих-код</button>
+    <div id="barcode-scanner" style="width:100%; margin-top: 15px;"></div>
+</div>
+
                 <div class="form-group">
                     <label for="category">Категория</label>
                     <select id="category" required>
@@ -615,5 +620,59 @@
             }
         });
     </script>
+
+<script>
+    let html5QrCode;
+    let isScanning = false;
+
+    function startBarcodeScanner() {
+        const scannerDiv = document.getElementById("barcode-scanner");
+
+        if (isScanning) {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                scannerDiv.innerHTML = "";
+                isScanning = false;
+            });
+            return;
+        }
+
+        html5QrCode = new Html5Qrcode("barcode-scanner");
+
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 100 },
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E
+            ]
+        };
+
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText, decodedResult) => {
+                document.getElementById("cardNumber").value = decodedText;
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    scannerDiv.innerHTML = "";
+                    isScanning = false;
+                });
+            },
+            (errorMessage) => {
+                // Ошибки можно логировать при необходимости
+            }
+        ).then(() => {
+            isScanning = true;
+        }).catch(err => {
+            console.error("Ошибка запуска камеры:", err);
+            alert("Не удалось запустить камеру: " + err);
+        });
+    }
+</script>
+
 </body>
 </html>
