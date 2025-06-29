@@ -657,6 +657,7 @@
         // Показать карту в модальном окне
         function showCard(cardId) {
             tg.HapticFeedback.impactOccurred('light');
+            tg.BackButton.show();
             
             const card = cards.find(c => c.id === cardId);
             if (card) {
@@ -672,6 +673,7 @@
 
         // Закрыть модальное окно
         function closeModal() {
+            tg.BackButton.hide();
             document.getElementById('cardModal').style.display = 'none';
         }
 
@@ -739,17 +741,6 @@
                 tg.close();
             }
         });
-
-        // Показываем кнопку "Назад" когда открыто модальное окно
-        function showCard(cardId) {
-            tg.BackButton.show();
-            // ... остальной код функции showCard
-        }
-
-        function closeModal() {
-            tg.BackButton.hide();
-            document.getElementById('cardModal').style.display = 'none';
-        }
     </script>
 
     <script>
