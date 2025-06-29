@@ -1,9 +1,10 @@
-
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Дисконтные карты</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,9 +14,9 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--tg-theme-bg-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
             min-height: 100vh;
-            color: #333;
+            color: var(--tg-theme-text-color, #333);
             overflow-x: hidden;
         }
 
@@ -33,7 +34,7 @@
         }
 
         .header h1 {
-            color: white;
+            color: var(--tg-theme-text-color, white);
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 8px;
@@ -41,12 +42,12 @@
         }
 
         .header p {
-            color: rgba(255,255,255,0.8);
+            color: var(--tg-theme-hint-color, rgba(255,255,255,0.8));
             font-size: 16px;
         }
 
         .add-card-form {
-            background: rgba(255,255,255,0.95);
+            background: var(--tg-theme-secondary-bg-color, rgba(255,255,255,0.95));
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 25px;
@@ -64,23 +65,24 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #555;
+            color: var(--tg-theme-text-color, #555);
             font-size: 14px;
         }
 
         .form-group input, .form-group select {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e1e5e9;
+            border: 2px solid var(--tg-theme-section-separator-color, #e1e5e9);
             border-radius: 12px;
             font-size: 16px;
             transition: all 0.3s ease;
-            background: white;
+            background: var(--tg-theme-bg-color, white);
+            color: var(--tg-theme-text-color, #333);
         }
 
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--tg-theme-button-color, #667eea);
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
             transform: translateY(-1px);
         }
@@ -88,8 +90,8 @@
         .btn-primary {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--tg-theme-button-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+            color: var(--tg-theme-button-text-color, white);
             border: none;
             border-radius: 12px;
             font-size: 16px;
@@ -115,7 +117,7 @@
         }
 
         .card {
-            background: rgba(255,255,255,0.95);
+            background: var(--tg-theme-secondary-bg-color, rgba(255,255,255,0.95));
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 20px;
@@ -139,7 +141,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: var(--tg-theme-button-color, linear-gradient(90deg, #667eea, #764ba2));
         }
 
         .card-header {
@@ -152,14 +154,14 @@
         .card-title {
             font-size: 18px;
             font-weight: 700;
-            color: #333;
+            color: var(--tg-theme-text-color, #333);
             margin-bottom: 4px;
         }
 
         .card-category {
             font-size: 12px;
-            color: #666;
-            background: #f0f0f0;
+            color: var(--tg-theme-hint-color, #666);
+            background: var(--tg-theme-section-bg-color, #f0f0f0);
             padding: 4px 8px;
             border-radius: 6px;
             text-transform: uppercase;
@@ -169,7 +171,7 @@
         .card-number {
             font-size: 16px;
             font-weight: 600;
-            color: #667eea;
+            color: var(--tg-theme-button-color, #667eea);
             margin-bottom: 10px;
             font-family: 'Courier New', monospace;
             letter-spacing: 1px;
@@ -184,9 +186,9 @@
         .btn-secondary {
             flex: 1;
             padding: 8px 12px;
-            background: #f8f9fa;
-            color: #667eea;
-            border: 1px solid #e1e5e9;
+            background: var(--tg-theme-section-bg-color, #f8f9fa);
+            color: var(--tg-theme-button-color, #667eea);
+            border: 1px solid var(--tg-theme-section-separator-color, #e1e5e9);
             border-radius: 8px;
             font-size: 14px;
             cursor: pointer;
@@ -194,13 +196,13 @@
         }
 
         .btn-secondary:hover {
-            background: #667eea;
-            color: white;
+            background: var(--tg-theme-button-color, #667eea);
+            color: var(--tg-theme-button-text-color, white);
         }
 
         .btn-delete {
             padding: 8px 12px;
-            background: #ff4757;
+            background: var(--tg-theme-destructive-text-color, #ff4757);
             color: white;
             border: none;
             border-radius: 8px;
@@ -217,14 +219,14 @@
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: rgba(255,255,255,0.8);
+            color: var(--tg-theme-hint-color, rgba(255,255,255,0.8));
             animation: fadeIn 0.6s ease-out;
         }
 
         .empty-state h3 {
             font-size: 24px;
             margin-bottom: 12px;
-            color: white;
+            color: var(--tg-theme-text-color, white);
         }
 
         .empty-state p {
@@ -250,7 +252,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
+            background: var(--tg-theme-bg-color, white);
             border-radius: 20px;
             padding: 30px;
             max-width: 350px;
@@ -268,11 +270,32 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid #f0f0f0;
+            border: 2px solid var(--tg-theme-section-separator-color, #f0f0f0);
         }
 
         .qr-code canvas {
             border-radius: 8px;
+        }
+
+        .scanner-container {
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tg-theme-button-color, #667eea);
+            color: var(--tg-theme-button-text-color, white);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 2000;
+            animation: slideInDown 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         @keyframes fadeIn {
@@ -313,6 +336,17 @@
             }
         }
 
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 15px;
@@ -327,7 +361,7 @@
             }
         }
     </style>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -337,19 +371,19 @@
         </div>
 
         <div class="add-card-form">
-            <h3 style="margin-bottom: 20px; color: #333;">Добавить новую карту</h3>
+            <h3 style="margin-bottom: 20px; color: var(--tg-theme-text-color, #333);">Добавить новую карту</h3>
             <form id="cardForm">
                 <div class="form-group">
                     <label for="storeName">Название магазина</label>
                     <input type="text" id="storeName" required placeholder="Например: Пятёрочка">
                 </div>
                 
-<div class="form-group">
-    <label for="cardNumber">Номер карты</label>
-    <input type="text" id="cardNumber" required placeholder="1234 5678 9012 3456">
-    <button type="button" onclick="startBarcodeScanner()" class="btn-secondary" style="margin-top: 10px;">📷 Сканировать штрих-код</button>
-    <div id="barcode-scanner" style="width:100%; margin-top: 15px;"></div>
-</div>
+                <div class="form-group">
+                    <label for="cardNumber">Номер карты</label>
+                    <input type="text" id="cardNumber" required placeholder="1234 5678 9012 3456">
+                    <button type="button" onclick="startBarcodeScanner()" class="btn-secondary" style="margin-top: 10px;">📷 Сканировать штрих-код</button>
+                    <div id="barcode-scanner" class="scanner-container"></div>
+                </div>
 
                 <div class="form-group">
                     <label for="category">Категория</label>
@@ -391,13 +425,43 @@
 
     <!-- Подключение библиотеки для генерации QR-кодов -->
     <script>
-        // Fallback функция для создания "псевдо QR-кода"
         window.QRious = window.QRious || null;
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js" onerror="console.log('QRious не загружена, используем fallback')"></script>
 
     <script>
         let cards = [];
+        let tg = window.Telegram.WebApp;
+
+        // Инициализация Telegram WebApp
+        tg.ready();
+        tg.expand();
+
+        // Настройка темы и цветов
+        if (tg.colorScheme === 'dark') {
+            document.documentElement.style.setProperty('--tg-theme-bg-color', '#1e1e1e');
+            document.documentElement.style.setProperty('--tg-theme-text-color', '#ffffff');
+            document.documentElement.style.setProperty('--tg-theme-hint-color', '#999999');
+        }
+
+        // Функция для показа уведомлений
+        function showNotification(message, type = 'success') {
+            // Используем Telegram HapticFeedback
+            if (type === 'success') {
+                tg.HapticFeedback.notificationOccurred('success');
+            } else if (type === 'error') {
+                tg.HapticFeedback.notificationOccurred('error');
+            }
+
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
@@ -428,6 +492,9 @@
             // Очистка формы
             document.getElementById('cardForm').reset();
             
+            // Показываем уведомление
+            showNotification('Карта успешно добавлена!');
+            
             // Анимация добавления
             setTimeout(() => {
                 const newCardElement = document.querySelector(`[data-card-id="${newCard.id}"]`);
@@ -437,18 +504,35 @@
             }, 100);
         });
 
-        // Сохранение карт
+        // Сохранение карт в Telegram Cloud Storage
         function saveCards() {
-            // В реальном Telegram Mini App здесь будет Telegram.WebApp.CloudStorage
-            localStorage.setItem('discountCards', JSON.stringify(cards));
+            if (tg.CloudStorage) {
+                tg.CloudStorage.setItem('discountCards', JSON.stringify(cards));
+            } else {
+                // Fallback для разработки
+                localStorage.setItem('discountCards', JSON.stringify(cards));
+            }
         }
 
-        // Загрузка карт
+        // Загрузка карт из Telegram Cloud Storage
         function loadCards() {
-            // В реальном Telegram Mini App здесь будет загрузка из Telegram.WebApp.CloudStorage
-            const savedCards = localStorage.getItem('discountCards');
-            if (savedCards) {
-                cards = JSON.parse(savedCards);
+            if (tg.CloudStorage) {
+                tg.CloudStorage.getItem('discountCards', (error, data) => {
+                    if (!error && data) {
+                        try {
+                            cards = JSON.parse(data);
+                            updateDisplay();
+                        } catch (e) {
+                            console.error('Ошибка парсинга данных:', e);
+                        }
+                    }
+                });
+            } else {
+                // Fallback для разработки
+                const savedCards = localStorage.getItem('discountCards');
+                if (savedCards) {
+                    cards = JSON.parse(savedCards);
+                }
             }
         }
 
@@ -484,7 +568,7 @@
                         </div>
                     </div>
                     <div class="card-number">${formatCardNumber(card.cardNumber)}</div>
-                    <div style="font-size: 12px; color: #999;">Добавлена: ${card.createdAt}</div>
+                    <div style="font-size: 12px; color: var(--tg-theme-hint-color, #999);">Добавлена: ${card.createdAt}</div>
                     <div class="card-actions">
                         <button class="btn-secondary" onclick="showCard(${card.id})">Показать</button>
                         <button class="btn-secondary" onclick="copyCardNumber('${card.cardNumber}')">Копировать</button>
@@ -502,16 +586,11 @@
 
         // Генерация QR-кода
         function generateQRCode(text, container) {
-            // Очистка контейнера
             container.innerHTML = '';
             
-            // Проверяем, доступна ли библиотека QRious
             if (window.QRious) {
                 try {
-                    // Создание canvas элемента
                     const canvas = document.createElement('canvas');
-                    
-                    // Генерация QR-кода с помощью QRious
                     const qr = new QRious({
                         element: canvas,
                         value: text,
@@ -520,7 +599,6 @@
                         foreground: '#333333',
                         level: 'M'
                     });
-                    
                     container.appendChild(canvas);
                     return;
                 } catch (error) {
@@ -533,13 +611,13 @@
                 <div style="
                     width: 180px; 
                     height: 180px; 
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: var(--tg-theme-button-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
                     border-radius: 12px;
                     display: flex; 
                     flex-direction: column; 
                     align-items: center; 
                     justify-content: center; 
-                    color: white;
+                    color: var(--tg-theme-button-text-color, white);
                     text-align: center;
                     padding: 20px;
                     box-sizing: border-box;
@@ -578,12 +656,13 @@
 
         // Показать карту в модальном окне
         function showCard(cardId) {
+            tg.HapticFeedback.impactOccurred('light');
+            
             const card = cards.find(c => c.id === cardId);
             if (card) {
                 document.getElementById('modalTitle').textContent = card.storeName;
                 document.getElementById('modalCardNumber').textContent = formatCardNumber(card.cardNumber);
                 
-                // Генерация QR-кода с номером карты
                 const qrContainer = document.getElementById('qrCode');
                 generateQRCode(card.cardNumber.replace(/\s/g, ''), qrContainer);
                 
@@ -598,19 +677,50 @@
 
         // Копировать номер карты
         function copyCardNumber(cardNumber) {
-            navigator.clipboard.writeText(cardNumber).then(() => {
-                // В реальном приложении можно показать уведомление
-                alert('Номер карты скопирован!');
-            });
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(cardNumber).then(() => {
+                    showNotification('Номер карты скопирован!');
+                });
+            } else {
+                // Fallback для старых браузеров
+                const textArea = document.createElement('textarea');
+                textArea.value = cardNumber;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('Номер карты скопирован!');
+            }
         }
 
         // Удалить карту
         function deleteCard(cardId) {
-            if (confirm('Вы уверены, что хотите удалить эту карту?')) {
-                cards = cards.filter(c => c.id !== cardId);
-                saveCards();
-                updateDisplay();
-            }
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            // Используем Telegram popup вместо обычного confirm
+            tg.showPopup({
+                title: 'Удаление карты',
+                message: 'Вы уверены, что хотите удалить эту карту?',
+                buttons: [
+                    {
+                        id: 'delete',
+                        type: 'destructive',
+                        text: 'Удалить'
+                    },
+                    {
+                        id: 'cancel',
+                        type: 'cancel',
+                        text: 'Отмена'
+                    }
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'delete') {
+                    cards = cards.filter(c => c.id !== cardId);
+                    saveCards();
+                    updateDisplay();
+                    showNotification('Карта удалена');
+                }
+            });
         }
 
         // Закрытие модального окна по клику вне его
@@ -619,60 +729,82 @@
                 closeModal();
             }
         });
-    </script>
 
-<script>
-    let html5QrCode;
-    let isScanning = false;
+        // Обработка кнопки "Назад" Telegram
+        tg.onEvent('backButtonClicked', function() {
+            const modal = document.getElementById('cardModal');
+            if (modal.style.display === 'block') {
+                closeModal();
+            } else {
+                tg.close();
+            }
+        });
 
-    function startBarcodeScanner() {
-        const scannerDiv = document.getElementById("barcode-scanner");
-
-        if (isScanning) {
-            html5QrCode.stop().then(() => {
-                html5QrCode.clear();
-                scannerDiv.innerHTML = "";
-                isScanning = false;
-            });
-            return;
+        // Показываем кнопку "Назад" когда открыто модальное окно
+        function showCard(cardId) {
+            tg.BackButton.show();
+            // ... остальной код функции showCard
         }
 
-        html5QrCode = new Html5Qrcode("barcode-scanner");
+        function closeModal() {
+            tg.BackButton.hide();
+            document.getElementById('cardModal').style.display = 'none';
+        }
+    </script>
 
-        const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 100 },
-            formatsToSupport: [
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
-                Html5QrcodeSupportedFormats.UPC_A,
-                Html5QrcodeSupportedFormats.UPC_E
-            ]
-        };
+    <script>
+        let html5QrCode;
+        let isScanning = false;
 
-        html5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            (decodedText, decodedResult) => {
-                document.getElementById("cardNumber").value = decodedText;
+        function startBarcodeScanner() {
+            const scannerDiv = document.getElementById("barcode-scanner");
+
+            if (isScanning) {
                 html5QrCode.stop().then(() => {
                     html5QrCode.clear();
                     scannerDiv.innerHTML = "";
                     isScanning = false;
                 });
-            },
-            (errorMessage) => {
-                // Ошибки можно логировать при необходимости
+                return;
             }
-        ).then(() => {
-            isScanning = true;
-        }).catch(err => {
-            console.error("Ошибка запуска камеры:", err);
-            alert("Не удалось запустить камеру: " + err);
-        });
-    }
-</script>
 
+            html5QrCode = new Html5Qrcode("barcode-scanner");
+
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 100 },
+                formatsToSupport: [
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E
+                ]
+            };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText, decodedResult) => {
+                    document.getElementById("cardNumber").value = decodedText;
+                    html5QrCode.stop().then(() => {
+                        html5QrCode.clear();
+                        scannerDiv.innerHTML = "";
+                        isScanning = false;
+                    });
+                    showNotification('Штрих-код успешно отсканирован!');
+                    tg.HapticFeedback.notificationOccurred('success');
+                },
+                (errorMessage) => {
+                    // Ошибки сканирования можно логировать при необходимости
+                }
+            ).then(() => {
+                isScanning = true;
+            }).catch(err => {
+                console.error("Ошибка запуска камеры:", err);
+                showNotification("Не удалось запустить камеру", 'error');
+            });
+        }
+    </script>
 </body>
 </html>
