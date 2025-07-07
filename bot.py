@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-WEBAPP_URL = "https://telegram-discount.vercel.app/"  # Поставь сюда реальный URL твоего WebApp
+WEBAPP_URL = ""  # Поставь сюда реальный URL твоего WebApp
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     button = KeyboardButton(
@@ -35,7 +35,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 def main():
-    TOKEN = "7966793894:AAFeYVXM4056vIZPcLNRvjrzJ0IcL53BjhA"  # Замените на токен вашего бота
+    TOKEN = ""  # Замените на токен вашего бота
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
