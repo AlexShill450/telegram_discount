@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Дисконтные карты</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -304,61 +304,29 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
 
         @keyframes slideInDown {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -20px);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, 0);
-            }
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .add-card-form {
-                padding: 20px;
-            }
+            .container { padding: 15px; }
+            .header h1 { font-size: 24px; }
+            .add-card-form { padding: 20px; }
         }
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -411,7 +379,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно для отображения карты -->
     <div class="modal" id="cardModal">
         <div class="modal-content">
             <h3 id="modalTitle"></h3>
@@ -456,9 +423,9 @@
             updateDisplay();
         });
 
-        // Очищаем тип штрихкода при ручном вводе номера
         document.getElementById('cardNumber').addEventListener('input', function() {
             this.dataset.barcodeFormat = '';
+            this.dataset.barcodeSvg = '';
         });
 
         document.getElementById('cardForm').addEventListener('submit', function(e) {
@@ -468,14 +435,16 @@
             const cardNumberInput = document.getElementById('cardNumber');
             const cardNumber = cardNumberInput.value;
             const barcodeFormat = cardNumberInput.dataset.barcodeFormat || null;
+            const barcodeSvg = cardNumberInput.dataset.barcodeSvg || null;
             const category = document.getElementById('category').value;
 
             const newCard = {
                 id: Date.now(),
-                storeName: storeName,
-                cardNumber: cardNumber,
-                barcodeFormat: barcodeFormat,
-                category: category,
+                storeName,
+                cardNumber,
+                barcodeFormat,
+                barcodeSvg,
+                category,
                 createdAt: new Date().toLocaleDateString()
             };
 
@@ -484,7 +453,6 @@
             updateDisplay();
 
             document.getElementById('cardForm').reset();
-
             showNotification('Карта успешно добавлена!');
 
             setTimeout(() => {
@@ -564,23 +532,24 @@
             });
         }
 
-        function formatCardNumber(number) {
-            return number.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
-        }
-
-        // Показываем именно сканированный штрихкод, если есть данные о формате
         function generateBarcode(card, container) {
             container.innerHTML = '';
-            if (card.barcodeFormat && window.JsBarcode) {
+            if (card.barcodeSvg) {
+                container.innerHTML = card.barcodeSvg;
+            } else if (card.barcodeFormat && window.JsBarcode) {
                 const svg = document.createElement('svg');
                 try {
-                    JsBarcode(svg, card.cardNumber, { format: card.barcodeFormat, width: 2, height: 80, displayValue: true });
+                    JsBarcode(svg, card.cardNumber, {
+                        format: card.barcodeFormat,
+                        width: 2,
+                        height: 80,
+                        displayValue: true
+                    });
                     container.appendChild(svg);
                 } catch (e) {
                     container.textContent = 'Ошибка отображения штрихкода';
                 }
             } else {
-                // fallback: показать номер карты
                 container.innerHTML = `
                     <div style="
                         font-family: 'Courier New', monospace; 
@@ -590,8 +559,8 @@
                         padding: 20px;
                         background: #fff;
                         border-radius: 8px;
-                        ">
-                        ${formatCardNumber(card.cardNumber)}
+                    ">
+                        ${card.cardNumber}
                     </div>
                 `;
             }
@@ -667,9 +636,8 @@
                 tg.close();
             }
         });
-    </script>
 
-    <script>
+        // Изменённый сканер
         let html5QrCode;
         let isScanning = false;
 
@@ -705,18 +673,29 @@
                 (decodedText, decodedResult) => {
                     const cardNumberInput = document.getElementById("cardNumber");
                     cardNumberInput.value = decodedText;
-                    // Сохраняем формат штрихкода
-                    cardNumberInput.dataset.barcodeFormat = decodedResult.result.format.formatName;
+
+                    const format = decodedResult.result.format.formatName;
+                    cardNumberInput.dataset.barcodeFormat = format;
+
+                    const svg = document.createElement('svg');
+                    try {
+                        JsBarcode(svg, decodedText, { format });
+                        cardNumberInput.dataset.barcodeSvg = svg.outerHTML;
+                    } catch (e) {
+                        console.error("Ошибка генерации SVG:", e);
+                    }
+
                     html5QrCode.stop().then(() => {
                         html5QrCode.clear();
                         scannerDiv.innerHTML = "";
                         isScanning = false;
                     });
+
                     showNotification('Штрих-код успешно отсканирован!');
                     tg.HapticFeedback.notificationOccurred('success');
                 },
                 (errorMessage) => {
-                    // Можно логировать ошибки сканирования
+                    // console.log("Ошибка сканирования:", errorMessage);
                 }
             ).then(() => {
                 isScanning = true;
@@ -726,5 +705,6 @@
             });
         }
     </script>
+
 </body>
 </html>
