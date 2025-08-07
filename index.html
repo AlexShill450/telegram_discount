@@ -552,7 +552,7 @@
                             <div class="card-category">${card.category}</div>
                         </div>
                     </div>
-                    <div class="card-number">${formatCardNumber(card.cardNumber)}</div>
+                    <div class="card-number">${card.cardNumber}</div>
                     <div style="font-size: 12px; color: var(--tg-theme-hint-color, #999);">Добавлена: ${card.createdAt}</div>
                     <div class="card-actions">
                         <button class="btn-secondary" onclick="showCard(${card.id})">Показать</button>
@@ -604,7 +604,7 @@
             const card = cards.find(c => c.id === cardId);
             if (card) {
                 document.getElementById('modalTitle').textContent = card.storeName;
-                document.getElementById('modalCardNumber').textContent = formatCardNumber(card.cardNumber);
+                document.getElementById('modalCardNumber').textContent = card.cardNumber;
 
                 const barcodeContainer = document.getElementById('qrCode');
                 generateBarcode(card, barcodeContainer);
