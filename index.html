@@ -383,6 +383,7 @@
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -398,7 +399,7 @@
                     <label for="storeName">Название магазина</label>
                     <input type="text" id="storeName" required placeholder="Например: Пятёрочка">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="cardNumber">Номер карты</label>
                     <input type="text" id="cardNumber" required placeholder="1234 5678 9012 3456">
@@ -451,7 +452,7 @@
         let isScanning = false;
 
         // Инициализация Telegram WebApp
-        tg.ready();
+        tg.ready(); 
         tg.expand();
 
         // Настройка темы и цветов
@@ -605,38 +606,61 @@
         // Функция для отображения штрих-кода
         function displayBarcode(text, container) {
             container.innerHTML = '';
-            
-            // Проверяем, есть ли библиотека JsBarcode
-            if (typeof JsBarcode !== 'undefined') {
+            // Проверяем, что текст не пустой
+            if (!text) {
+                const placeholder = document.createElement('div');
+                placeholder.textContent = 'Нет данных для отображения';
+                container.appendChild(placeholder);
+                return;
+            }
+
+            // Проверяем, является ли текст QR-кодом
+            if (!/^\d+$/.test(text) || text.length > 16) {
                 try {
-                    const canvas = document.createElement('canvas');
-                    container.appendChild(canvas);
-                    
-                    // Определяем тип штрих-кода на основе длины и содержания
-                    let format = 'CODE128';
-                    if (/^\d{13}$/.test(text)) {
-                        format = 'EAN13';
-                    } else if (/^\d{8}$/.test(text)) {
-                        format = 'EAN8';
-                    } else if (/^\d{12}$/.test(text)) {
-                        format = 'UPC';
-                    }
-                    
-                    JsBarcode(canvas, text, {
-                        format: format,
-                        width: 2,
-                        height: 100,
-                        displayValue: true,
-                        fontSize: 16,
-                        background: "#ffffff",
-                        lineColor: "#000000",
-                        margin: 10
+                    new QRCode(container, {
+                        text: text,
+                        width: 200,
+                        height: 200,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
                     });
                     return;
                 } catch (error) {
-                    console.error('Ошибка генерации штрих-кода:', error);
+                    console.error('Ошибка генерации QR:', error);
                 }
             }
+
+            
+            // Иначе пробуем как линейный штрихкод
+            try {
+                const canvas = document.createElement('canvas');
+                container.appendChild(canvas);
+
+
+                let format = 'CODE128';
+                if (/^\d{13}$/.test(text)) format = 'EAN13';
+                else if (/^\d{8}$/.test(text)) format = 'EAN8';
+                else if (/^\d{12}$/.test(text)) format = 'UPC';
+
+
+                JsBarcode(canvas, text, {
+                    format: format,
+                    width: 2,
+                    height: 100,
+                    displayValue: true,
+                    fontSize: 16,
+                    background: "#ffffff",
+                    lineColor: "#000000",
+                    margin: 10
+                });
+            } catch (error) {
+                console.error('Ошибка генерации штрих-кода:', error);
+                const fallback = document.createElement('div');
+                fallback.textContent = text;
+                container.appendChild(fallback);
+            }
+        }
             
             // Fallback - стилизованное отображение без штрих-кода
             const placeholder = document.createElement('div');
@@ -671,7 +695,6 @@
                 </div>
             `;
             container.appendChild(placeholder);
-        }
 
         // Показать карту в модальном окне
         function showCard(cardId) {
@@ -681,13 +704,9 @@
             const card = cards.find(c => c.id === cardId);
             if (card) {
                 document.getElementById('modalTitle').textContent = card.storeName;
-                document.getElementById('modalCardNumber').textContent = formatCardNumber(card.cardNumber);
-                
+                document.getElementById('modalCardNumber').textContent = card.cardNumber;
                 const barcodeContainer = document.getElementById('barcodeDisplay');
-                // Используем оригинальные данные штрих-кода
-                const barcodeData = card.originalBarcode || card.cardNumber.replace(/\s/g, '');
-                displayBarcode(barcodeData, barcodeContainer);
-                
+                displayBarcode(card.cardNumber, barcodeContainer);
                 document.getElementById('cardModal').style.display = 'block';
             }
         }
